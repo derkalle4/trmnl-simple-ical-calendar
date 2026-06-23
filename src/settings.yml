@@ -1,0 +1,46 @@
+name: 'Simple iCAL Calendar'
+no_screen_padding: 'no'
+dark_mode: 'no'
+strategy: polling
+static_data: |-
+  {
+  }
+polling_verb: get
+polling_url: |-
+  {% assign url_list = urls | split: "," %}
+  {% for url in url_list %}
+  {{ url | strip }}?export&start={{ "now" | date: "%s" }}&end={{ "now" | date: "%s" | plus: 15552000 }}&expand=1
+  {% endfor %}
+polling_headers: |-
+  {% assign basic_raw = username | append= "=" | append= password %}
+  {% assign basic_auth = basic_raw | base64_encode %}
+
+  Authorization= Basic {{ basic_auth }}
+refresh_interval: 60
+id: null
+custom_fields:
+  -
+    keyname: urls
+    field_type: multi_string
+    name: 'iCal URL(s)'
+    description: 'URL to the ical calendar(s) without parameters (e.g. ?export)'
+  -
+    keyname: names
+    field_type: multi_string
+    name: 'iCal Name(s)'
+    description: 'Name of the ical calendar(s)'
+  -
+    keyname: username
+    field_type: string
+    name: Username
+    description: 'Username of the user that can (read) access the calendar'
+  -
+    keyname: password
+    field_type: password
+    name: Password
+    description: 'Password of the user that can (read) access the calendar'
+  -
+    keyname: display_header
+    field_type: boolean
+    name: 'Show title bar'
+    description: 'Whether or not to show the title bar.'
