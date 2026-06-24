@@ -20,67 +20,79 @@
     $sizeConfig = [
         'full' => [
             'height' => 460,
-            'paddingY' => 10,
-            'paddingX' => 14,
-            'dayLabelHeight' => 18,
-            'rowHeight' => 34,
-            'groupGap' => 8,
-            'timeWidth' => 56,
-            'labelWidth' => 68,
-            'dayFont' => 11,
-            'timeFont' => 10,
-            'titleFont' => 15,
+            'paddingY' => 6,
+            'paddingX' => 12,
+            'dayLabelHeight' => 16,
+            'rowHeight' => 32,
+            'groupGap' => 4,
+            'rowGap' => 0,
+            'timeWidth' => 48,
+            'labelWidth' => 58,
+            'gridGap' => 6,
+            'dayFont' => 12,
+            'timeFont' => 11,
+            'titleFont' => 17,
             'calendarFont' => 9,
-            'titleLimit' => 72,
+            'emptyFont' => 16,
+            'titleLimit' => 84,
             'calendarLimit' => 12,
         ],
         'half_horizontal' => [
             'height' => 225,
-            'paddingY' => 8,
-            'paddingX' => 12,
-            'dayLabelHeight' => 16,
-            'rowHeight' => 30,
-            'groupGap' => 6,
-            'timeWidth' => 52,
-            'labelWidth' => 62,
-            'dayFont' => 10,
+            'paddingY' => 6,
+            'paddingX' => 10,
+            'dayLabelHeight' => 14,
+            'rowHeight' => 28,
+            'groupGap' => 3,
+            'rowGap' => 0,
+            'timeWidth' => 38,
+            'labelWidth' => 42,
+            'gridGap' => 4,
+            'dayFont' => 11,
             'timeFont' => 9,
             'titleFont' => 13,
             'calendarFont' => 8,
-            'titleLimit' => 52,
-            'calendarLimit' => 10,
+            'emptyFont' => 14,
+            'titleLimit' => 42,
+            'calendarLimit' => 8,
         ],
         'half_vertical' => [
             'height' => 460,
-            'paddingY' => 8,
-            'paddingX' => 12,
-            'dayLabelHeight' => 16,
-            'rowHeight' => 30,
-            'groupGap' => 6,
-            'timeWidth' => 52,
-            'labelWidth' => 62,
-            'dayFont' => 10,
+            'paddingY' => 6,
+            'paddingX' => 10,
+            'dayLabelHeight' => 14,
+            'rowHeight' => 28,
+            'groupGap' => 3,
+            'rowGap' => 0,
+            'timeWidth' => 38,
+            'labelWidth' => 42,
+            'gridGap' => 4,
+            'dayFont' => 11,
             'timeFont' => 9,
             'titleFont' => 13,
             'calendarFont' => 8,
-            'titleLimit' => 46,
-            'calendarLimit' => 10,
+            'emptyFont' => 14,
+            'titleLimit' => 38,
+            'calendarLimit' => 8,
         ],
         'quadrant' => [
             'height' => 235,
-            'paddingY' => 7,
-            'paddingX' => 10,
-            'dayLabelHeight' => 15,
-            'rowHeight' => 26,
-            'groupGap' => 5,
-            'timeWidth' => 46,
-            'labelWidth' => 52,
-            'dayFont' => 9,
+            'paddingY' => 5,
+            'paddingX' => 8,
+            'dayLabelHeight' => 13,
+            'rowHeight' => 24,
+            'groupGap' => 2,
+            'rowGap' => 0,
+            'timeWidth' => 34,
+            'labelWidth' => 34,
+            'gridGap' => 4,
+            'dayFont' => 10,
             'timeFont' => 8,
             'titleFont' => 11,
-            'calendarFont' => 8,
-            'titleLimit' => 28,
-            'calendarLimit' => 8,
+            'calendarFont' => 7,
+            'emptyFont' => 13,
+            'titleLimit' => 20,
+            'calendarLimit' => 6,
         ],
     ];
 
@@ -99,11 +111,7 @@
     $events = $calendarBuckets
         ->flatMap(function (array $bucket, string $key) use ($names, $tz, $currentTime) {
             $index = (int) Str::after($key, 'IDX_');
-            $calendarName = $names->get($index);
-
-            if (! $calendarName) {
-                $calendarName = 'CAL' . ($index + 1);
-            }
+            $calendarName = $names->get($index) ?: 'CAL' . ($index + 1);
 
             return collect($bucket['ical'] ?? [])->map(function (array $event) use ($tz, $currentTime, $calendarName) {
                 try {
@@ -185,7 +193,7 @@
     foreach ($rows as $row) {
         $rowHeight = $row['type'] === 'day'
             ? ($ui['dayLabelHeight'] + $ui['groupGap'])
-            : $ui['rowHeight'];
+            : ($ui['rowHeight'] + $ui['rowGap']);
 
         if (($usedHeight + $rowHeight) > $availableHeight) {
             break;
@@ -194,9 +202,118 @@
         $visibleRows->push($row);
         $usedHeight += $rowHeight;
     }
+
+    $scope = 'calendar-' . Str::random(6);
 @endphp
 
 <x-trmnl::view size="{{ $size }}">
+    <style>
+        #{{ $scope }} {
+            --pad-y: {{ $ui['paddingY'] }}px;
+            --pad-x: {{ $ui['paddingX'] }}px;
+            --day-h: {{ $ui['dayLabelHeight'] }}px;
+            --row-h: {{ $ui['rowHeight'] }}px;
+            --group-gap: {{ $ui['groupGap'] }}px;
+            --grid-gap: {{ $ui['gridGap'] }}px;
+            --time-w: {{ $ui['timeWidth'] }}px;
+            --label-w: {{ $ui['labelWidth'] }}px;
+            --day-font: {{ $ui['dayFont'] }}px;
+            --time-font: {{ $ui['timeFont'] }}px;
+            --title-font: {{ $ui['titleFont'] }}px;
+            --calendar-font: {{ $ui['calendarFont'] }}px;
+            --empty-font: {{ $ui['emptyFont'] }}px;
+        }
+
+        #{{ $scope }}.calendar-wrap {
+            height: 100%;
+            width: 100%;
+            min-width: 0;
+            padding: var(--pad-y) var(--pad-x);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            color: #000;
+        }
+
+        #{{ $scope }} .calendar-empty {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--empty-font);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            text-align: center;
+        }
+
+        #{{ $scope }} .calendar-day {
+            height: var(--day-h);
+            display: flex;
+            align-items: flex-end;
+            width: 100%;
+            min-width: 0;
+            margin-bottom: var(--group-gap);
+            padding-top: 2px;
+            border-top: 1px solid #d9d9d9;
+            font-size: var(--day-font);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            line-height: 1;
+            color: #000;
+        }
+
+        #{{ $scope }} .calendar-event {
+            width: 100%;
+            min-width: 0;
+            height: var(--row-h);
+            display: grid;
+            grid-template-columns: {{ $showCalendarLabels ? 'var(--time-w) minmax(0, 1fr) var(--label-w)' : 'var(--time-w) minmax(0, 1fr)' }};
+            gap: var(--grid-gap);
+            align-items: center;
+            border-bottom: 1px solid #ececec;
+            overflow: hidden;
+        }
+
+        #{{ $scope }} .calendar-time {
+            min-width: 0;
+            font-size: var(--time-font);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: #000;
+        }
+
+        #{{ $scope }} .calendar-title {
+            min-width: 0;
+            font-size: var(--title-font);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #000;
+        }
+
+        #{{ $scope }} .calendar-label {
+            min-width: 0;
+            text-align: right;
+            font-size: var(--calendar-font);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #666;
+        }
+    </style>
+
     @if($showHeader)
         <div class="title_bar">
             <span class="title">Calendar</span>
@@ -204,97 +321,30 @@
         </div>
     @endif
 
-    <x-trmnl::layout class="layout--col" style="height:100%; width:100%; padding:0; gap:0;">
-        <div style="
-            height:100%;
-            width:100%;
-            padding:{{ $ui['paddingY'] }}px {{ $ui['paddingX'] }}px;
-            overflow:hidden;
-            display:flex;
-            flex-direction:column;
-            background:#fff;
-            color:#000;
-        ">
+    <x-trmnl::layout class="layout--col w--full" style="height:100%; width:100%; padding:0; gap:0;">
+        <div id="{{ $scope }}" class="calendar-wrap">
             @if($visibleRows->where('type', 'event')->isEmpty())
-                <div style="
-                    height:100%;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    font-size:14px;
-                    font-weight:700;
-                    letter-spacing:-0.01em;
-                ">
+                <div class="calendar-empty">
                     No upcoming events
                 </div>
             @else
                 @foreach($visibleRows as $row)
                     @if($row['type'] === 'day')
-                        <div style="
-                            height:{{ $ui['dayLabelHeight'] }}px;
-                            display:flex;
-                            align-items:center;
-                            margin-bottom:{{ $ui['groupGap'] }}px;
-                            font-size:{{ $ui['dayFont'] }}px;
-                            font-weight:700;
-                            text-transform:uppercase;
-                            letter-spacing:0.08em;
-                            color:#000;
-                            border-top:1px solid #d9d9d9;
-                            padding-top:4px;
-                        ">
+                        <div class="calendar-day">
                             {{ $row['label'] }}
                         </div>
                     @else
-                        <article style="
-                            height:{{ $ui['rowHeight'] }}px;
-                            display:grid;
-                            grid-template-columns:{{ $showCalendarLabels ? $ui['timeWidth'].'px 1fr '.$ui['labelWidth'].'px' : $ui['timeWidth'].'px 1fr' }};
-                            gap:8px;
-                            align-items:center;
-                            border-bottom:1px solid #ebebeb;
-                            overflow:hidden;
-                        ">
-                            <div style="
-                                font-size:{{ $ui['timeFont'] }}px;
-                                font-weight:700;
-                                line-height:1;
-                                letter-spacing:0.04em;
-                                text-transform:uppercase;
-                                white-space:nowrap;
-                                color:#000;
-                            ">
+                        <article class="calendar-event">
+                            <div class="calendar-time">
                                 {{ $row['time'] }}
                             </div>
 
-                            <div style="
-                                min-width:0;
-                                font-size:{{ $ui['titleFont'] }}px;
-                                font-weight:700;
-                                line-height:1;
-                                letter-spacing:-0.02em;
-                                white-space:nowrap;
-                                overflow:hidden;
-                                text-overflow:ellipsis;
-                                color:#000;
-                            ">
+                            <div class="calendar-title">
                                 {{ Str::limit($row['title'], $ui['titleLimit']) }}
                             </div>
 
                             @if($showCalendarLabels)
-                                <div style="
-                                    min-width:0;
-                                    text-align:right;
-                                    font-size:{{ $ui['calendarFont'] }}px;
-                                    font-weight:700;
-                                    line-height:1;
-                                    letter-spacing:0.08em;
-                                    text-transform:uppercase;
-                                    white-space:nowrap;
-                                    overflow:hidden;
-                                    text-overflow:ellipsis;
-                                    color:#666;
-                                ">
+                                <div class="calendar-label">
                                     {{ Str::limit($row['calendar_name'], $ui['calendarLimit']) }}
                                 </div>
                             @endif
