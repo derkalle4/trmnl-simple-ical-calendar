@@ -234,6 +234,9 @@
             flex-direction: column;
             background: #fff;
             color: #000;
+            border: 1px solid #000;
+            border-radius: 14px;
+            box-sizing: border-box;
         }
 
         #{{ $scope }} .calendar-empty {
