@@ -20,8 +20,8 @@
     $sizeConfig = [
         'full' => [
             'height' => 460,
-            'paddingY' => 6,
-            'paddingX' => 12,
+            'paddingY' => 12,
+            'paddingX' => 14,
             'dayLabelHeight' => 16,
             'rowHeight' => 32,
             'groupGap' => 4,
@@ -39,8 +39,8 @@
         ],
         'half_horizontal' => [
             'height' => 225,
-            'paddingY' => 6,
-            'paddingX' => 10,
+            'paddingY' => 10,
+            'paddingX' => 12,
             'dayLabelHeight' => 14,
             'rowHeight' => 28,
             'groupGap' => 3,
@@ -58,8 +58,8 @@
         ],
         'half_vertical' => [
             'height' => 460,
-            'paddingY' => 6,
-            'paddingX' => 10,
+            'paddingY' => 10,
+            'paddingX' => 12,
             'dayLabelHeight' => 14,
             'rowHeight' => 28,
             'groupGap' => 3,
@@ -77,8 +77,8 @@
         ],
         'quadrant' => [
             'height' => 235,
-            'paddingY' => 5,
-            'paddingX' => 8,
+            'paddingY' => 8,
+            'paddingX' => 10,
             'dayLabelHeight' => 13,
             'rowHeight' => 24,
             'groupGap' => 2,
@@ -228,14 +228,13 @@
             height: 100%;
             width: 100%;
             min-width: 0;
+            min-height: 0;
             padding: var(--pad-y) var(--pad-x);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             background: #fff;
             color: #000;
-            border: 1px solid #000;
-            border-radius: 14px;
             box-sizing: border-box;
         }
 
@@ -265,6 +264,7 @@
             letter-spacing: 0.06em;
             line-height: 1;
             color: #000;
+            box-sizing: border-box;
         }
 
         #{{ $scope }} .calendar-event {
@@ -277,6 +277,7 @@
             align-items: center;
             border-bottom: 1px solid #ececec;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         #{{ $scope }} .calendar-time {
@@ -315,16 +316,15 @@
             text-overflow: ellipsis;
             color: #666;
         }
+
+        .view--half_horizontal #{{ $scope }}.calendar-wrap,
+        .view--half_vertical #{{ $scope }}.calendar-wrap,
+        .view--quadrant #{{ $scope }}.calendar-wrap {
+            padding-top: calc(var(--pad-y) - 1px);
+        }
     </style>
 
-    @if($showHeader)
-        <div class="title_bar">
-            <span class="title">Calendar</span>
-            <span class="instance">{{ $visibleRows->where('type', 'event')->count() }} upcoming</span>
-        </div>
-    @endif
-
-    <x-trmnl::layout class="layout--col w--full" style="height:100%; width:100%; padding:0; gap:0;">
+    <x-trmnl::layout class="layout--col w--full h--full" style="padding:0; gap:0;">
         <div id="{{ $scope }}" class="calendar-wrap">
             @if($visibleRows->where('type', 'event')->isEmpty())
                 <div class="calendar-empty">
@@ -357,4 +357,11 @@
             @endif
         </div>
     </x-trmnl::layout>
+
+    @if($showHeader)
+        <div class="title_bar">
+            <span class="title">Calendar</span>
+            <span class="instance">{{ $visibleRows->where('type', 'event')->count() }} upcoming</span>
+        </div>
+    @endif
 </x-trmnl::view>
